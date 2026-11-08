@@ -1,3 +1,3 @@
-    </main> <!-- Fecha main-content -->
+    </main>
 </body>
 </html>

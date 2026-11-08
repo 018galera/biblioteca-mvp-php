@@ -1,39 +1,41 @@
 <?php
-
 namespace App\Config;
 
 use PDO;
 use PDOException;
 
-class Database
-{
+class Database {
+    /** @var Database|null */
     private static $instance = null;
+
+    /** @var PDO */
     private $conn;
 
     private $host = "localhost";
-    private $dbname = "biblioteca_db";
+    private $dbname = "biblioteca_mvp";
     private $user = "root";
-    private $pass = ""; // No XAMPP padr„o, a senha È vazia
+    private $pass = "";
     private $charset = "utf8mb4";
 
-    private function __construct()
-    {
+    private function __construct() {
         $dsn = "mysql:host={$this->host};dbname={$this->dbname};charset={$this->charset}";
         $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
+            PDO::ATTR_EMULATE_PREPARES   => false,
         ];
 
         try {
             $this->conn = new PDO($dsn, $this->user, $this->pass, $options);
         } catch (PDOException $e) {
-            die("Erro de conex„o com o banco de dados: " . $e->getMessage());
+            die("<div style='background:#fee2e2;color:#991b1b;padding:20px;font-family:sans-serif;'>
+                    <h3>Erro Cr√≠tico no Banco de Dados</h3>
+                    <p>N√£o foi poss√≠vel conectar. Detalhes: " . htmlspecialchars($e->getMessage()) . "</p>
+                 </div>");
         }
     }
 
-    public static function getConnection()
-    {
+    public static function getConnection(): PDO {
         if (self::$instance === null) {
             self::$instance = new Database();
         }

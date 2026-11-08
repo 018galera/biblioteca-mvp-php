@@ -1,33 +1,29 @@
 <?php
-
 namespace App\Controllers;
-
 use App\Models\Categoria;
+use App\Models\Livro;
 
-class CategoriaController
-{
+class CategoriaController {
+    /** @var Categoria */
     private $model;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->model = new Categoria();
     }
 
-    public function index()
-    {
+    public function index(): void {
         $categorias = $this->model->all();
         require __DIR__ . '/../Views/categorias/index.php';
     }
 
-    public function create()
-    {
+    public function create(): void {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nome = trim($_POST['nome'] ?? '');
             if (empty($nome)) {
-                $_SESSION['erro'] = 'O nome da categoria é obrigatório.';
+                $_SESSION['erro'] = 'O nome Ã© obrigatÃ³rio.';
             } else {
                 $this->model->create($nome);
-                $_SESSION['sucesso'] = 'Categoria criada com sucesso!';
+                $_SESSION['sucesso'] = 'Categoria criada!';
                 header('Location: ' . BASE_URL . 'index.php?route=categorias/index');
                 exit;
             }
@@ -35,15 +31,14 @@ class CategoriaController
         require __DIR__ . '/../Views/categorias/form.php';
     }
 
-    public function edit()
-    {
-        $id = $_GET['id'] ?? null;
+    public function edit(): void {
+        $id = (int)($_GET['id'] ?? 0);
         $categoria = $this->model->find($id);
-
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nome = trim($_POST['nome'] ?? '');
             if (empty($nome)) {
-                $_SESSION['erro'] = 'O nome é obrigatório.';
+                $_SESSION['erro'] = 'O nome Ã© obrigatÃ³rio.';
             } else {
                 $this->model->update($id, $nome);
                 $_SESSION['sucesso'] = 'Categoria atualizada!';
@@ -54,25 +49,27 @@ class CategoriaController
         require __DIR__ . '/../Views/categorias/form.php';
     }
 
-    public function delete()
-    {
-        $id = $_GET['id'] ?? null;
+    public function delete(): void {
+        $id = (int)($_GET['id'] ?? 0);
         if ($id) {
-            $this->model->delete($id);
-            $_SESSION['sucesso'] = 'Categoria excluída (e livros associados).';
+            try {
+                $this->model->delete($id);
+                $_SESSION['sucesso'] = 'Categoria excluÃ­da.';
+            } catch (\Exception $e) {
+                $_SESSION['erro'] = 'NÃ£o Ã© possÃ­vel excluir: existem livros vinculados.';
+            }
         }
         header('Location: ' . BASE_URL . 'index.php?route=categorias/index');
     }
 
-    public function show()
-    {
-        $id = $_GET['id'] ?? null;
+    public function show(): void {
+        $id = (int)($_GET['id'] ?? 0);
         $categoria = $this->model->find($id);
-
-        // Instancia o model de Livro para buscar os relacionados
-        $livroModel = new \App\Models\Livro();
-        $livros = $livroModel->findByCategory($id);
-
+        
+        $livroModel = new Livro();
+        $todosLivros = $livroModel->all(); 
+        $livros = array_filter($todosLivros, fn($l) => $l['categoria_id'] == $id);
+        
         require __DIR__ . '/../Views/categorias/show.php';
     }
 }
